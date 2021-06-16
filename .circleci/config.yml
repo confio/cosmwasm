@@ -250,8 +250,8 @@ jobs:
           name: Unit tests
           command: cargo unit-test --locked
       - run:
-          name: Integration tests (singlepass backend)
-          command: cargo integration-test --locked --no-default-features
+          name: Integration tests
+          command: cargo integration-test --locked
       - run:
           name: Build and run schema generator
           command: cargo schema --locked
@@ -300,8 +300,8 @@ jobs:
           name: Unit tests
           command: cargo unit-test --locked
       - run:
-          name: Integration tests (singlepass backend)
-          command: cargo integration-test --locked --no-default-features
+          name: Integration tests
+          command: cargo integration-test --locked
       - run:
           name: Build and run schema generator
           command: cargo schema --locked
@@ -350,8 +350,8 @@ jobs:
           name: Unit tests
           command: cargo unit-test --locked
       - run:
-          name: Integration tests (singlepass backend)
-          command: cargo integration-test --locked --no-default-features
+          name: Integration tests
+          command: cargo integration-test --locked
       - run:
           name: Build and run schema generator
           command: cargo schema --locked
@@ -400,8 +400,8 @@ jobs:
           name: Unit tests
           command: cargo unit-test --locked
       - run:
-          name: Integration tests (singlepass backend)
-          command: cargo integration-test --locked --no-default-features
+          name: Integration tests
+          command: cargo integration-test --locked
       - run:
           name: Build and run schema generator
           command: cargo schema --locked
@@ -424,7 +424,6 @@ jobs:
             - target/wasm32-unknown-unknown/release/build
             - target/wasm32-unknown-unknown/release/deps
           key: cargocache-v2-contract_ibc_reflect-rust:1.51.0-{{ checksum "Cargo.lock" }}
-
 
   contract_ibc_reflect_send:
     docker:
@@ -451,8 +450,8 @@ jobs:
           name: Unit tests
           command: cargo unit-test --locked
       - run:
-          name: Integration tests (singlepass backend)
-          command: cargo integration-test --locked --no-default-features
+          name: Integration tests
+          command: cargo integration-test --locked
       - run:
           name: Build and run schema generator
           command: cargo schema --locked
@@ -501,8 +500,8 @@ jobs:
           name: Unit tests
           command: cargo unit-test --locked
       - run:
-          name: Integration tests (singlepass backend)
-          command: cargo integration-test --locked --no-default-features
+          name: Integration tests
+          command: cargo integration-test --locked
       - run:
           name: Build and run schema generator
           command: cargo schema --locked
@@ -551,8 +550,8 @@ jobs:
           name: Unit tests
           command: cargo unit-test --locked
       - run:
-          name: Integration tests (singlepass backend)
-          command: cargo integration-test --locked --no-default-features
+          name: Integration tests
+          command: cargo integration-test --locked
       - run:
           name: Build and run schema generator
           command: cargo schema --locked
@@ -601,8 +600,8 @@ jobs:
           name: Unit tests
           command: cargo unit-test --locked
       - run:
-          name: Integration tests (singlepass backend)
-          command: cargo integration-test --locked --no-default-features
+          name: Integration tests
+          command: cargo integration-test --locked
       - run:
           name: Build and run schema generator
           command: cargo schema --locked
