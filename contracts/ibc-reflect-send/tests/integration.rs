@@ -20,7 +20,8 @@
 use cosmwasm_std::testing::{mock_ibc_channel, mock_ibc_packet_ack};
 use cosmwasm_std::{
     attr, coin, coins, BankMsg, CosmosMsg, Empty, IbcAcknowledgement, IbcAcknowledgementWithPacket,
-    IbcBasicResponse, IbcMsg, IbcOrder, Response,
+    IbcBasicResponse, IbcChannelConnectMsg, IbcChannelOpenMsg, IbcMsg, IbcOrder, IbcPacketAckMsg,
+    Response,
 };
 use cosmwasm_vm::testing::{
     execute, ibc_channel_connect, ibc_channel_open, ibc_packet_ack, instantiate, mock_env,
@@ -53,13 +54,15 @@ fn setup() -> Instance<MockApi, MockStorage, MockQuerier> {
 // save the account (tested in detail in `proper_handshake_flow`)
 fn connect(deps: &mut Instance<MockApi, MockStorage, MockQuerier>, channel_id: &str) {
     // open packet has no counterparty version, connect does
-    let mut handshake_open = mock_ibc_channel(channel_id, IbcOrder::Ordered, IBC_VERSION);
-    handshake_open.counterparty_version = None;
+    let mut handshake_open =
+        IbcChannelOpenMsg::new(mock_ibc_channel(channel_id, IbcOrder::Ordered, IBC_VERSION));
+    handshake_open.channel.counterparty_version = None;
     // first we try to open with a valid handshake
     ibc_channel_open(deps, mock_env(), handshake_open).unwrap();
 
     // then we connect (with counter-party version set)
-    let handshake_connect = mock_ibc_channel(channel_id, IbcOrder::Ordered, IBC_VERSION);
+    let handshake_connect =
+        IbcChannelConnectMsg::new(mock_ibc_channel(channel_id, IbcOrder::Ordered, IBC_VERSION));
     let res: IbcBasicResponse = ibc_channel_connect(deps, mock_env(), handshake_connect).unwrap();
 
     // this should send a WhoAmI request, which is received some blocks later
@@ -86,7 +89,8 @@ fn who_am_i_response<T: Into<String>>(
         acknowledgement: IbcAcknowledgement::encode_json(&response).unwrap(),
         original_packet: mock_ibc_packet_ack(channel_id, &packet).unwrap(),
     };
-    let res: IbcBasicResponse = ibc_packet_ack(deps, mock_env(), ack).unwrap();
+    let msg = IbcPacketAckMsg::new(ack);
+    let res: IbcBasicResponse = ibc_packet_ack(deps, mock_env(), msg).unwrap();
     assert_eq!(0, res.messages.len());
 }
 
@@ -102,13 +106,22 @@ fn instantiate_works() {
 fn enforce_version_in_handshake() {
     let mut deps = setup();
 
-    let wrong_order = mock_ibc_channel("channel-12", IbcOrder::Unordered, IBC_VERSION);
+    let wrong_order = IbcChannelOpenMsg::new(mock_ibc_channel(
+        "channel-12",
+        IbcOrder::Unordered,
+        IBC_VERSION,
+    ));
     ibc_channel_open(&mut deps, mock_env(), wrong_order).unwrap_err();
 
-    let wrong_version = mock_ibc_channel("channel-12", IbcOrder::Ordered, "reflect");
+    let wrong_version =
+        IbcChannelOpenMsg::new(mock_ibc_channel("channel-12", IbcOrder::Ordered, "reflect"));
     ibc_channel_open(&mut deps, mock_env(), wrong_version).unwrap_err();
 
-    let valid_handshake = mock_ibc_channel("channel-12", IbcOrder::Ordered, IBC_VERSION);
+    let valid_handshake = IbcChannelOpenMsg::new(mock_ibc_channel(
+        "channel-12",
+        IbcOrder::Ordered,
+        IBC_VERSION,
+    ));
     ibc_channel_open(&mut deps, mock_env(), valid_handshake).unwrap();
 }
 
@@ -188,7 +201,8 @@ fn dispatch_message_send_and_ack() {
         acknowledgement: IbcAcknowledgement::encode_json(&AcknowledgementMsg::Ok(())).unwrap(),
         original_packet: packet,
     };
-    let res: IbcBasicResponse = ibc_packet_ack(&mut deps, mock_env(), ack).unwrap();
+    let msg = IbcPacketAckMsg::new(ack);
+    let res: IbcBasicResponse = ibc_packet_ack(&mut deps, mock_env(), msg).unwrap();
     // no actions expected, but let's check the events to see it was dispatched properly
     assert_eq!(0, res.messages.len());
     assert_eq!(vec![attr("action", "acknowledge_dispatch")], res.attributes)
